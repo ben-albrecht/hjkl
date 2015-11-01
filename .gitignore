@@ -1,4 +1,7 @@
-*.pyc
-tags
 .DS_Store
+
+tags
 driver
+
+*.o
+*.pyc

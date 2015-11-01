@@ -5,7 +5,7 @@
 
 // Screen dimensions
 const int SCREEN_WIDTH = 640;
-const int SCREEN_HEIGHT = 380;
+const int SCREEN_HEIGHT = 480;
 
 //The window we'll be rendering to
 SDL_Window* gWindow = NULL;
@@ -24,6 +24,8 @@ int main(int argc, char* args[]) {
 
     // Main Loop flag
     bool quit = false;
+
+    bool stretch = false;
 
     // Event handler
     SDL_Event e;
@@ -53,13 +55,15 @@ int main(int argc, char* args[]) {
         while (SDL_PollEvent(&e) != 0) {
 
             // User requests quit
-            if (e.type == SDL_QUIT) {
+            if (e.type == SDL_QUIT || e.key.keysym.sym == SDLK_ESCAPE) {
                 quit = true;
             }
 
             // User presses a key
             else if (e.type == SDL_KEYDOWN)
             {
+                stretch = false;
+                printf("stretch = false\n");
                 switch(e.key.keysym.sym)
                 {
                     case SDLK_h:
@@ -77,14 +81,29 @@ int main(int argc, char* args[]) {
                     case SDLK_l:
                     gCurrentSurface = gKeyPressSurfaces[KEY_PRESS_SURFACE_RIGHT];
                     break;
+
+                    case SDLK_SPACE:
+                    gCurrentSurface = gKeyPressSurfaces[KEY_PRESS_SURFACE_SPACE];
+                    stretch = true;
+                    break;
                 }
             }
         } //  while (SDL_PolLEvent(&e) != 0
 
-        //Apply the image
-        /* Takes source surface (gCurrentSurface) and stamps a copy of it onto
-        destination surface (gScreenSurface), which is displayed in gWindow */
-        SDL_BlitSurface( gCurrentSurface, NULL, gScreenSurface, NULL );
+        if (stretch) {
+            // Demonstration of stretching image to match screen size
+            SDL_Rect stretchRect;
+            stretchRect.x = 0;
+            stretchRect.y = 0;
+            stretchRect.w = SCREEN_WIDTH;
+            stretchRect.h = SCREEN_HEIGHT;
+            SDL_BlitScaled(gCurrentSurface, NULL, gScreenSurface, &stretchRect);
+        } else {
+            //Apply the image
+            /* Takes source surface (gCurrentSurface) and stamps a copy of it onto
+            destination surface (gScreenSurface), which is displayed in gWindow */
+            SDL_BlitSurface( gCurrentSurface, NULL, gScreenSurface, NULL );
+        }
         // Necessary after any change to our window
         SDL_UpdateWindowSurface( gWindow );
 
@@ -125,12 +144,27 @@ bool init() {
 }
 
 SDL_Surface* loadSurface(std::string path) {
+
+    // Final optimized image
+    SDL_Surface* optimizedSurface = NULL;
+
     //Load splash image
     SDL_Surface* loadedSurface = SDL_LoadBMP(path.c_str());
     if (loadedSurface == NULL) {
         printf( "Unable to load image %s! SDL Error: %s\n", path.c_str(), SDL_GetError() );
+    } else {
+        // Convert surface to screen format
+        /* Most BMP images are in 24bit format. This converts 24bit to 32bit image
+           so that SDL does not have to convert it on the fly every blit */
+        optimizedSurface = SDL_ConvertSurface(loadedSurface, gScreenSurface->format, 0);
+        if (optimizedSurface == NULL) {
+            printf( "Unable to optimize image %s! SDL Error: %s\n", path.c_str(), SDL_GetError() );
+        }
+        // Free up old loaded surface
+        SDL_FreeSurface(loadedSurface);
     }
-    return loadedSurface;
+
+    return optimizedSurface;
 }
 
 bool loadMedia()
@@ -177,6 +211,13 @@ bool loadMedia()
         success = false;
     }
 
+    // Load colors surface
+    gKeyPressSurfaces[KEY_PRESS_SURFACE_SPACE] = loadSurface("images/colors.bmp");
+    if (gKeyPressSurfaces[KEY_PRESS_SURFACE_SPACE] == NULL )
+    {
+        printf("Failed to load colors (space) image!\n");
+        success = false;
+    }
     return success;
 }
 
