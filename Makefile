@@ -1,10 +1,14 @@
 OUT = driver
 CXX = clang++
-LIBSDL = -L/usr/local/lib -lSDL2
+
+LIB = -L/usr/local/lib
+LIBSDL = -lSDL2
+LIBIMG = -lSDL2_image
+
 INCSDL = -I/usr/local/include/SDL2
 
 CXXFLAGS = ${INCSDL}
-LDFLAGS = ${LIBSDL}
+LDFLAGS = ${LIB} ${LIBSDL} ${LIBIMG}
 
 OBJECTS = driver.o
 

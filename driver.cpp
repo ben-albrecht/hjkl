@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <string>
 #include <SDL.h>
+#include <SDL_image.h>
 #include "driver.h"
 
 // Screen dimensions
@@ -29,6 +30,13 @@ int main(int argc, char* args[]) {
 
     // Event handler
     SDL_Event e;
+
+    // Demonstration of stretching image to match screen size
+    SDL_Rect stretchRect;
+    stretchRect.x = 0;
+    stretchRect.y = 0;
+    stretchRect.w = SCREEN_WIDTH;
+    stretchRect.h = SCREEN_HEIGHT;
 
     //Start up SDL and create window
     if( !init() )
@@ -62,24 +70,26 @@ int main(int argc, char* args[]) {
             // User presses a key
             else if (e.type == SDL_KEYDOWN)
             {
-                stretch = false;
-                printf("stretch = false\n");
                 switch(e.key.keysym.sym)
                 {
                     case SDLK_h:
                     gCurrentSurface = gKeyPressSurfaces[KEY_PRESS_SURFACE_LEFT];
+                    stretch = false;
                     break;
 
                     case SDLK_j:
                     gCurrentSurface = gKeyPressSurfaces[KEY_PRESS_SURFACE_DOWN];
+                    stretch = false;
                     break;
 
                     case SDLK_k:
                     gCurrentSurface = gKeyPressSurfaces[KEY_PRESS_SURFACE_UP];
+                    stretch = false;
                     break;
 
                     case SDLK_l:
                     gCurrentSurface = gKeyPressSurfaces[KEY_PRESS_SURFACE_RIGHT];
+                    stretch = false;
                     break;
 
                     case SDLK_SPACE:
@@ -91,12 +101,6 @@ int main(int argc, char* args[]) {
         } //  while (SDL_PolLEvent(&e) != 0
 
         if (stretch) {
-            // Demonstration of stretching image to match screen size
-            SDL_Rect stretchRect;
-            stretchRect.x = 0;
-            stretchRect.y = 0;
-            stretchRect.w = SCREEN_WIDTH;
-            stretchRect.h = SCREEN_HEIGHT;
             SDL_BlitScaled(gCurrentSurface, NULL, gScreenSurface, &stretchRect);
         } else {
             //Apply the image
@@ -135,23 +139,32 @@ bool init() {
             printf("SDL window could not be created! SDL_Error: %s\n", SDL_GetError());
             success = false;
         } else {
-            // Get window surface
-            gScreenSurface = SDL_GetWindowSurface( gWindow );
+
+            // Initialize PNG loading (separate SDL2 library)
+            int imgFlags = IMG_INIT_PNG;
+            if ( !(IMG_Init(imgFlags) & imgFlags )) {
+                printf("SDL_image could not be initialized! SDL_Error: %s\n", IMG_GetError());
+                success = false;
+            } else {
+                // Get window surface
+                gScreenSurface = SDL_GetWindowSurface(gWindow);
+            }
         }
     }
 
     return success;
 }
 
+
 SDL_Surface* loadSurface(std::string path) {
 
     // Final optimized image
     SDL_Surface* optimizedSurface = NULL;
 
-    //Load splash image
-    SDL_Surface* loadedSurface = SDL_LoadBMP(path.c_str());
+    //Load image given by path
+    SDL_Surface* loadedSurface = IMG_Load(path.c_str());
     if (loadedSurface == NULL) {
-        printf( "Unable to load image %s! SDL Error: %s\n", path.c_str(), SDL_GetError() );
+        printf( "Unable to load image %s! SDL Error: %s\n", path.c_str(), IMG_GetError() );
     } else {
         // Convert surface to screen format
         /* Most BMP images are in 24bit format. This converts 24bit to 32bit image
