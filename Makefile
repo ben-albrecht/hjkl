@@ -1,4 +1,4 @@
-OUT = driver
+OUT = hjkl
 CXX = clang++
 
 LIB = -L/usr/local/lib
@@ -17,3 +17,8 @@ all: $(OUT)
 
 $(OUT): $(OBJECTS)
 	$(CXX) ${CXXFLAGS} -o $@ $^ ${LDFLAGS}
+
+clean:
+	rm -f $(OUT)
+	rm -f *.o
+	rm -f tags

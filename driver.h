@@ -16,8 +16,12 @@ void close();
 // Loads an individual image
 SDL_Surface* loadSurface(std::string path);
 
+// Loads an individual image as a texture
+/* This utilizes fast flexible hardware-based rendering */
+SDL_Texture* loadTexture(std::string path);
+
 // Key press surfaces consants
-enum KeyPressSurface
+enum KeyPressTexture
 {
     KEY_PRESS_SURFACE_DEFAULT,
     KEY_PRESS_SURFACE_UP,
