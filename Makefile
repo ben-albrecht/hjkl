@@ -10,7 +10,7 @@ INCSDL = -I/usr/local/include/SDL2
 CXXFLAGS = ${INCSDL}
 LDFLAGS = ${LIB} ${LIBSDL} ${LIBIMG}
 
-OBJECTS = driver.o
+OBJECTS = driver.o colors.o
 
 all: $(OUT)
 	ctags -R *.h *.cpp

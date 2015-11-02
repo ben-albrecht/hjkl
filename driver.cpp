@@ -3,6 +3,7 @@
 #include <SDL.h>
 #include <SDL_image.h>
 #include "driver.h"
+#include "colors.h"
 
 // Screen dimensions
 const int SCREEN_WIDTH = 640;
@@ -26,11 +27,14 @@ SDL_Texture* gKeyPressTextures[ KEY_PRESS_SURFACE_TOTAL ];
 // Current displayed image
 SDL_Surface* gCurrentSurface = NULL;
 
+
 // SDL REQUIRES this signature for main
 int main(int argc, char* args[]) {
 
     // Main Loop flag
     bool quit = false;
+
+    bool shapes = false;
 
     // Event handler
     SDL_Event e;
@@ -69,24 +73,33 @@ int main(int argc, char* args[]) {
             {
                 switch(e.key.keysym.sym)
                 {
+                    default:
+                    shapes = true;
+                    break;
+
                     case SDLK_h:
                     gTexture = gKeyPressTextures[KEY_PRESS_SURFACE_LEFT];
+                    shapes = false;
                     break;
 
                     case SDLK_j:
                     gTexture = gKeyPressTextures[KEY_PRESS_SURFACE_DOWN];
+                    shapes = false;
                     break;
 
                     case SDLK_k:
                     gTexture = gKeyPressTextures[KEY_PRESS_SURFACE_UP];
+                    shapes = false;
                     break;
 
                     case SDLK_l:
                     gTexture = gKeyPressTextures[KEY_PRESS_SURFACE_RIGHT];
+                    shapes = false;
                     break;
 
                     case SDLK_SPACE:
                     gTexture = gKeyPressTextures[KEY_PRESS_SURFACE_SPACE];
+                    shapes = false;
                     break;
                 }
             }
@@ -95,9 +108,32 @@ int main(int argc, char* args[]) {
         // Clear screen
         SDL_RenderClear(gRenderer);
 
-        // Render texture to screen
-        /* Stretches the image to full screen */
-        SDL_RenderCopy(gRenderer, gTexture, NULL, NULL);
+        if (shapes) {
+            //Render red filled quad
+            SDL_Rect fillRect = {SCREEN_WIDTH / 4, SCREEN_HEIGHT / 4, SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2};
+            SetRenderDrawColor(gRenderer, BASE01);
+            SDL_RenderFillRect( gRenderer, &fillRect );
+
+            // Draw a rectanglular outline with empty center
+            SDL_Rect outlineRect = {SCREEN_WIDTH / 6, SCREEN_HEIGHT / 6, SCREEN_WIDTH * 2 / 3, SCREEN_HEIGHT * 2 / 3 };
+            SetRenderDrawColor(gRenderer, BASE03);
+            SDL_RenderDrawRect(gRenderer, &outlineRect);
+
+            // Draw a thin pixel line
+            SetRenderDrawColor(gRenderer, BLUE);
+            SDL_RenderDrawLine(gRenderer, 0, SCREEN_HEIGHT / 2, SCREEN_WIDTH, SCREEN_HEIGHT / 2);
+
+            // Draw vertical line of cyan dots
+            SetRenderDrawColor(gRenderer, CYAN);
+            for (int i = 0; i < SCREEN_HEIGHT; i += 4) {
+                SDL_RenderDrawPoint(gRenderer, SCREEN_WIDTH / 2, i);
+            }
+
+            SetRenderDrawColor(gRenderer, BASE03);
+        } else {
+            // Render texture to screen
+            SDL_RenderCopy(gRenderer, gTexture, NULL, NULL);
+        }
 
         // Update screen
         SDL_RenderPresent(gRenderer);
@@ -109,6 +145,7 @@ int main(int argc, char* args[]) {
 
     return 0;
 }
+
 
 bool init() {
     bool success = true;
@@ -145,7 +182,7 @@ bool init() {
             else {
                 // Initialize renderer color
                 /* Draw color to rendering context, r(ed), g(reen), b(lue), a(lpha) */
-                SDL_SetRenderDrawColor(gRenderer, 0xFF, 0xFF, 0xFF, 0xFF);
+                SetRenderDrawColor(gRenderer, BASE03);
 
                 // Initialize PNG loading (separate SDL2 library)
                 int imgFlags = IMG_INIT_PNG;
@@ -186,6 +223,7 @@ SDL_Texture* loadTexture(std::string path)
     return newTexture;
 }
 
+
 SDL_Surface* loadSurface(std::string path) {
 
     // Final optimized image
@@ -209,6 +247,7 @@ SDL_Surface* loadSurface(std::string path) {
 
     return optimizedSurface;
 }
+
 
 bool loadMedia()
 {
@@ -263,6 +302,7 @@ bool loadMedia()
     }
     return success;
 }
+
 
 void close()
 {
