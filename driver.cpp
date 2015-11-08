@@ -44,7 +44,7 @@ int main(int argc, char* args[]) {
     // Main Loop flag
     bool quit = false;
 
-    bool shapes = false;
+    int render = 0;
 
     // Event handler
     SDL_Event e;
@@ -79,6 +79,12 @@ int main(int argc, char* args[]) {
     topViewport.w = SCREEN_WIDTH;
     topViewport.h = SCREEN_HEIGHT / 2;
 
+    SDL_Rect fullViewport;
+    fullViewport.x = 0;
+    fullViewport.y = 0;
+    fullViewport.w = SCREEN_WIDTH;
+    fullViewport.h = SCREEN_HEIGHT;
+
     // While application is running
     while (!quit) {
 
@@ -96,70 +102,92 @@ int main(int argc, char* args[]) {
                 switch(e.key.keysym.sym)
                 {
                     default:
-                    shapes = true;
+                    render = RENDER_NULL;
                     break;
 
                     case SDLK_h:
                     gTexture = gKeyPressTextures[KEY_PRESS_SURFACE_LEFT];
-                    shapes = false;
+                    render = RENDER_SHAPE;
                     break;
 
                     case SDLK_j:
                     gTexture = gKeyPressTextures[KEY_PRESS_SURFACE_DOWN];
-                    shapes = false;
+                    render = RENDER_SHAPE;
                     break;
 
                     case SDLK_k:
                     gTexture = gKeyPressTextures[KEY_PRESS_SURFACE_UP];
-                    shapes = false;
+                    render = RENDER_SHAPE;
                     break;
 
                     case SDLK_l:
                     gTexture = gKeyPressTextures[KEY_PRESS_SURFACE_RIGHT];
-                    shapes = false;
+                    render = RENDER_SHAPE;
                     break;
 
                     case SDLK_SPACE:
                     gTexture = gKeyPressTextures[KEY_PRESS_SURFACE_SPACE];
-                    shapes = false;
+                    render = RENDER_SHAPE;
                     break;
+
+                    case SDLK_c:
+                    render = RENDER_CIRCLE;
+
                 }
             }
         } //  while (SDL_PolLEvent(&e) != 0
 
-        // Clear screen
-        SDL_RenderClear(gRenderer);
+        if (render != RENDER_NULL) {
 
-        SDL_RenderSetViewport(gRenderer, &lowerViewport);
-        //Render red filled quad
-        SDL_Rect fillRect = {SCREEN_WIDTH / 4, SCREEN_HEIGHT / 4, SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2};
-        SetRenderDrawColor(gRenderer, BASE01);
-        SDL_RenderFillRect( gRenderer, &fillRect );
+            // Clear screen
+            SDL_RenderClear(gRenderer);
 
-        // Draw a rectanglular outline with empty center
-        SDL_Rect outlineRect = {SCREEN_WIDTH / 6, SCREEN_HEIGHT / 6, SCREEN_WIDTH * 2 / 3, SCREEN_HEIGHT * 2 / 3 };
-        SetRenderDrawColor(gRenderer, BASE03);
-        SDL_RenderDrawRect(gRenderer, &outlineRect);
+            switch(render)
+            {
+                case RENDER_CIRCLE:
+                // Render image of circle via LTexture
+                SDL_RenderSetViewport(gRenderer, &fullViewport);
+                gBackgroundTexture.render(0, 0);
+                gCircleTexture.render(240, 190);
+                break;
 
-        // Draw a thin pixel line
-        SetRenderDrawColor(gRenderer, BLUE);
-        SDL_RenderDrawLine(gRenderer, 0, SCREEN_HEIGHT / 2, SCREEN_WIDTH, SCREEN_HEIGHT / 2);
 
-        // Draw vertical line of cyan dots
-        SetRenderDrawColor(gRenderer, CYAN);
-        for (int i = 0; i < SCREEN_HEIGHT; i += 4) {
-            SDL_RenderDrawPoint(gRenderer, SCREEN_WIDTH / 2, i);
-        }
+                case RENDER_SHAPE:
+                // Render image to screen via texture set previously
+                SDL_RenderSetViewport(gRenderer, &topViewport);
+                SDL_RenderCopy(gRenderer, gTexture, NULL, NULL);
 
-        SetRenderDrawColor(gRenderer, BASE03);
+                SDL_RenderSetViewport(gRenderer, &lowerViewport);
+                //Render red filled quad
+                SDL_Rect fillRect = {SCREEN_WIDTH / 4, SCREEN_HEIGHT / 4, SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2};
+                SetRenderDrawColor(gRenderer, BASE01);
+                SDL_RenderFillRect( gRenderer, &fillRect );
 
-        // Render texture to screen
-        SDL_RenderSetViewport(gRenderer, &topViewport);
-        SDL_RenderCopy(gRenderer, gTexture, NULL, NULL);
+                // Draw a rectanglular outline with empty center
+                SDL_Rect outlineRect = {SCREEN_WIDTH / 6, SCREEN_HEIGHT / 6, SCREEN_WIDTH * 2 / 3, SCREEN_HEIGHT * 2 / 3 };
+                SetRenderDrawColor(gRenderer, BASE03);
+                SDL_RenderDrawRect(gRenderer, &outlineRect);
 
-        // Update screen
-        SDL_RenderPresent(gRenderer);
+                // Draw a thin pixel line
+                SetRenderDrawColor(gRenderer, BLUE);
+                SDL_RenderDrawLine(gRenderer, 0, SCREEN_HEIGHT / 2, SCREEN_WIDTH, SCREEN_HEIGHT / 2);
 
+                // Draw vertical line of cyan dots
+                SetRenderDrawColor(gRenderer, CYAN);
+                for (int i = 0; i < SCREEN_HEIGHT; i += 4) {
+                    SDL_RenderDrawPoint(gRenderer, SCREEN_WIDTH / 2, i);
+                }
+
+                SetRenderDrawColor(gRenderer, BASE03);
+
+                break;
+
+            } // render switch
+
+            // Update screen
+            SDL_RenderPresent(gRenderer);
+
+        } // if render != null
     } // while (!quit)
 
     // Free up resources and close SDL

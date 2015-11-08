@@ -32,6 +32,15 @@ enum KeyPressTexture
     KEY_PRESS_SURFACE_TOTAL
 };
 
+enum Render
+{
+    RENDER_NULL,
+    RENDER_CIRCLE,
+    RENDER_SHAPE,
+    RENDER_IMG,
+    RENDER_TOTAL
+};
+
 // Global variables
 
 // The window we'll be rendering to
