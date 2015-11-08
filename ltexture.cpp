@@ -1,9 +1,11 @@
-#include "ltexture.h"
-
 #include <string>
 #include <stdio.h>
 
+#include <SDL.h>
+#include <SDL_image.h>
+
 #include "driver.h"
+#include "ltexture.h"
 
 LTexture::LTexture()
 {
@@ -43,8 +45,8 @@ bool LTexture::loadFromFile(std::string path)
             printf("Unable to create texture from %s! SDL Error: %s\n", path.c_str(), SDL_GetError());
         } else {
             // Get image dimensions
-            mWidth = loadedSurface->w
-            mHeight = loadedSurface->h
+            mWidth = loadedSurface->w;
+            mHeight = loadedSurface->h;
         }
 
         // Free up loaded surface
@@ -84,7 +86,7 @@ int LTexture::getWidth()
 }
 
 
-int getHeight()
+int LTexture::getHeight()
 {
     return mHeight;
 }

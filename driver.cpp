@@ -1,9 +1,15 @@
+// Standard
 #include <stdio.h>
 #include <string>
+
+// SDL
 #include <SDL.h>
 #include <SDL_image.h>
-#include "driver.h"
+
+// hjkl
 #include "colors.h"
+#include "driver.h"
+#include "ltexture.h"
 
 // Screen dimensions
 const int SCREEN_WIDTH = 640;
@@ -28,8 +34,8 @@ SDL_Texture* gKeyPressTextures[ KEY_PRESS_SURFACE_TOTAL ];
 SDL_Surface* gCurrentSurface = NULL;
 
 // Scene textures
-//LTexture gCircleTexture;
-//LTexture gBackgroundTexture;
+LTexture gCircleTexture;
+LTexture gBackgroundTexture;
 
 
 // SDL REQUIRES this signature for main
@@ -269,6 +275,18 @@ bool loadMedia()
 {
     bool success = true;
 
+    // Load circle texture
+    if(!gCircleTexture.loadFromFile("images/circle.png")) {
+        printf("Failed to load Circle texture image\n!");
+        success = false;
+    }
+
+    // Load background texture
+    if(!gBackgroundTexture.loadFromFile("images/background.png")) {
+        printf("Failed to load Background texture image\n!");
+        success = false;
+    }
+
     // Load default surface
     gKeyPressTextures[ KEY_PRESS_SURFACE_DEFAULT ] = loadTexture("images/press.bmp");
     if( gKeyPressTextures[ KEY_PRESS_SURFACE_DEFAULT ] == NULL )
@@ -323,8 +341,11 @@ bool loadMedia()
 void close()
 {
     // Free loaded image from texture
+    gCircleTexture.free();
+    gBackgroundTexture.free();
     SDL_DestroyTexture(gTexture);
     gTexture = NULL;
+
 
     // Free loaded image from surface
     SDL_FreeSurface( gCurrentSurface );
